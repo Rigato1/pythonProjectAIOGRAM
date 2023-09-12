@@ -14,3 +14,7 @@ if __name__ == '__main__':
     print_hi('PyCharm')
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm
+def instrument_pechati(gaga):
+    print(gaga)
+
+instrument_pechati("ololo")
