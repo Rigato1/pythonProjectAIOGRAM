@@ -1,20 +1,45 @@
-# This is a sample Python script.
+import asyncio
+import logging
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from aiogram import Bot, Dispatcher
+from config_data.config import Config, load_config
+from handlers import other_handlers, user_handlers
+from keyboards.main_menu import set_main_menu
+
+# Инициализируем логгер
+logger = logging.getLogger(__name__)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Функция конфигурирования и запуска бота
+async def main():
+    # Конфигурируем логирование
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(filename)s:%(lineno)d #%(levelname)-8s '
+               '[%(asctime)s] - %(name)s - %(message)s')
+
+    # Выводим в консоль информацию о начале запуска бота
+    logger.info('Starting bot')
+
+    # Загружаем конфиг в переменную config
+    config: Config = load_config()
+
+    # Инициализируем бот и диспетчер
+    bot = Bot(token=config.tg_bot.token,
+              parse_mode='HTML')
+    dp = Dispatcher()
+
+    # Настраиваем главное меню бота
+    await set_main_menu(bot)
+
+    # Регистриуем роутеры в диспетчере
+    dp.include_router(user_handlers.router)
+    dp.include_router(other_handlers.router)
+
+    # Пропускаем накопившиеся апдейты и запускаем polling
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm
-def instrument_pechati(gaga):
-    print(gaga)
-
-instrument_pechati("ololo")
+    asyncio.run(main())
