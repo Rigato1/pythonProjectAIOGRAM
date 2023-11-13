@@ -28,7 +28,7 @@ async def main():
     bot = Bot(token=config.tg_bot.token,
               parse_mode='HTML')
     dp = Dispatcher()
-    global bot
+
     # Настраиваем главное меню бота
     await set_main_menu(bot)
 

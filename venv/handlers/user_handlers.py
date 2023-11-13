@@ -1,15 +1,12 @@
 from copy import deepcopy
 
-from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, Message
-from database.database import user_dict_template, users_db, medinskiy_1, check_users, vivod_dannih
-from filters.filters import IsDelBookmarkCallbackData, IsDigitCallbackData
+from database.database import user_dict_template, users_db, check_users, vivod_dannih
 from keyboards.knopki_urokov import for_start_kb
 from keyboards.ecsamen_kb import get_ecsamen_kb, ending_ecsamen_kb
 from lexicon.lexicon import LEXICON
-from services.file_handling import book
 from services.services import get_ecsamen, zagruzka_dannih, kolichestvo_voprosov
 from database.database import create_new_row_for_new_user, kursi
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
