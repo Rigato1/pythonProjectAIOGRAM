@@ -2,5 +2,6 @@
 
 .mypy_cache/
 .vscode/
-venv/
 __pycache__/
+Lib
+Scripts
