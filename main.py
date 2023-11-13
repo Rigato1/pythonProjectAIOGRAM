@@ -28,12 +28,13 @@ async def main():
     bot = Bot(token=config.tg_bot.token,
               parse_mode='HTML')
     dp = Dispatcher()
-
+    global bot
     # Настраиваем главное меню бота
     await set_main_menu(bot)
 
     # Регистриуем роутеры в диспетчере
     dp.include_router(user_handlers.router)
+
     dp.include_router(other_handlers.router)
 
     # Пропускаем накопившиеся апдейты и запускаем polling
