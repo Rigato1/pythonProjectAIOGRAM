@@ -4,8 +4,8 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, Message
 from database.database import user_dict_template, users_db, check_users, vivod_dannih
-from keyboards.knopki_urokov import for_start_kb
 from keyboards.ecsamen_kb import get_ecsamen_kb, ending_ecsamen_kb
+from keyboards.knopki_urokov import for_start_kb
 from lexicon.lexicon import LEXICON
 from services.services import get_ecsamen, zagruzka_dannih, kolichestvo_voprosov
 from database.database import create_new_row_for_new_user, kursi
@@ -62,6 +62,32 @@ async def process_begin(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
 
     await message.answer("Выберите тему:", reply_markup=keyboard)
+
+#кнопка перезапуска когда кончаются слова
+@router.callback_query(F.data=='restart')
+async def restart_func(callback_query: CallbackQuery):
+    start = users_db[callback_query.from_user.id]['start']
+    table = users_db[callback_query.from_user.id]['book_name']
+    users_db[callback_query.from_user.id]['index'] = 0
+    index = users_db[callback_query.from_user.id]['index']
+    # Получаем текст урока по его номеру
+    rows = get_ecsamen(table, start, index)  # Замените это вашей функцией получения текста урока
+
+    await callback_query.message.edit_text(
+        text=f'{LEXICON["translate"]} "{rows[1]}"',
+        reply_markup=get_ecsamen_kb(rows))
+
+#кнопка выбора другой темы просто перекидывает в начало инлайн клавиатуры
+@router.callback_query(F.data=='New_theme')
+async def new_theme_func(callback_query: CallbackQuery):
+    book_buttons=[]
+    for book_name in kursi.keys():
+        button = InlineKeyboardButton(text=book_name, callback_data=book_name)
+        book_buttons.append([button])
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
+
+    await callback_query.message.edit_text("Выберите тему:", reply_markup=keyboard)
 
 
 #хендлер выбора предмета для экзамена
