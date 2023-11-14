@@ -50,7 +50,7 @@ users_db = {}
 
 def create_new_row_for_new_user(user_id, first_name, last_name):
 
-    with sq.connect("/database/learning.db") as con:
+    with sq.connect("venv/database/learning.db") as con:
         cur = con.cursor()
         create_query = """
             INSERT INTO users (user_id, first_name, last_name) SELECT ?, ?, ?
@@ -64,7 +64,7 @@ def create_new_row_for_new_user(user_id, first_name, last_name):
 
 #проверка на то, есть ли такой пользователь в таблице
 def check_users():
-    with sq.connect("/database/learning.db") as con:
+    with sq.connect("venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute("""SELECT user_id FROM users
         """)

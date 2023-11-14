@@ -40,7 +40,7 @@ async def process_begin(message: Message):
 
     # Удаляем все сообщения с ботом в чате пользователя
     # Замените 0 на последнее сообщение с вашим ботом, если есть
-    await bot.delete_message(chat_id, message.message_id - 1)
+    await message.bot.delete_message(chat_id, message.message_id - 1)
     book_buttons = []
     for book_name in kursi.keys():
         button = InlineKeyboardButton(text=book_name, callback_data=book_name)
