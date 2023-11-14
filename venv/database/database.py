@@ -6,7 +6,9 @@ user_dict_template = {
     'active_course':"Арабский язык",
     'book_name':'Мединский_курс_том_1',
     'nomer_uroka':0,
-    'start':'A'
+    'start':'A',
+    'message_id':[],
+    'bot_messages':[]
 }
 
 

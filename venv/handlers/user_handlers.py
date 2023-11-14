@@ -19,7 +19,7 @@ router = Router()
 # и отправлять ему приветственное сообщение
 @router.message(CommandStart())
 async def process_start_command(message: Message):
-    await message.answer(LEXICON[message.text],
+    sent_message = await message.answer(LEXICON[message.text],
                          reply_markup=for_start_kb)
     id=message.from_user.id
     users = check_users()
@@ -31,24 +31,37 @@ async def process_start_command(message: Message):
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
         if message.from_user.id not in users_db:
             users_db[message.from_user.id] = deepcopy(user_dict_template)
+    # строка для добавления айди бота в список чтобы очищать сообщения перед экзаменом
+    users_db[message.from_user.id]['message_id'].append(message.message_id)
+    users_db[message.from_user.id]['bot_messages'].append(sent_message.message_id)
+
+
+
+
 
 #начало экзамена
 @router.message(F.text == 'Начать экзамен')
 async def process_begin(message: Message):
+    users_db[message.from_user.id]['message_id'].append(message.message_id)
     # Получаем чат ID пользователя
     chat_id = message.chat.id
-
-    # Удаляем все сообщения с ботом в чате пользователя
-    # Замените 0 на последнее сообщение с вашим ботом, если есть
-    await message.bot.delete_message(chat_id, message.message_id - 1)
+    #здесь мы очищаем все сообщения из чата
+    messages_ids = users_db[message.from_user.id]['message_id']
+    bot_messages = users_db[message.from_user.id]['bot_messages']
+    for message_id in messages_ids:
+        await message.bot.delete_message(chat_id, message_id)
+    for message_id in bot_messages:
+        await message.bot.delete_message(chat_id, message_id)
     book_buttons = []
+    users_db[message.from_user.id]['message_id']=[]
+    users_db[message.from_user.id]['bot_messages']=[]
     for book_name in kursi.keys():
         button = InlineKeyboardButton(text=book_name, callback_data=book_name)
         book_buttons.append([button])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
 
-    await message.reply("Выберите тему:", reply_markup=keyboard)
+    await message.answer("Выберите тему:", reply_markup=keyboard)
 
 
 #хендлер выбора предмета для экзамена
@@ -143,7 +156,9 @@ async def proverka_otveta(callback: CallbackQuery):
 # и отправлять пользователю сообщение со списком доступных команд в боте
 @router.message(Command(commands='help'))
 async def process_help_command(message: Message):
-    await message.answer(LEXICON[message.text])
+    sent_message = await message.answer(LEXICON[message.text])
+    users_db[message.from_user.id]['bot_messages'].append(sent_message.message_id)
+    users_db[message.from_user.id]['message_id'].append(message.message_id)
 
 
 # Этот хэндлер будет срабатывать на команду "/continue"
@@ -154,6 +169,7 @@ async def process_continue_command(message: Message):
     await message.answer(
         text=text,
         reply_markup=get_ecsamen_kb(rows))
+    users_db[message.from_user.id]['message_id'].append(message.message_id)
 
 
 

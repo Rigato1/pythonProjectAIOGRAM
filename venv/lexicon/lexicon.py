@@ -22,7 +22,6 @@ LEXICON: dict[str, str] = {
 }
 
 LEXICON_COMMANDS: dict[str, str] = {
-    '/beginning': 'Начало экзамена',
-    '/continue': 'Продолжить экзамен',
+    '/start': 'Начать пользоваться ботом',
     '/help': 'Справка по работе бота'
 }

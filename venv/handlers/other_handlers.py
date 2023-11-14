@@ -8,4 +8,6 @@ router = Router()
 # не предусмотренные логикой работы бота
 @router.message()
 async def send_echo(message: Message):
-    await message.answer(f'Это эхо! {message.text}')
+    sent_message = await message.answer(f'Это эхо! {message.text}')
+    users_db[message.from_user.id]['message_id'].append(message.message_id)
+    users_db[message.from_user.id]['bot_messages'].append(sent_message.message_id)
