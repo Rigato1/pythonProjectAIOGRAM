@@ -3,11 +3,17 @@ import sqlite3 as sq
 
 user_dict_template = {
     'bookmarks': set(),
-    'index':2,
+    'index':0,
     'active_course':"Арабский язык",
     'book_name':'Мединский_курс_том_1',
-    'nomer_uroka':1,
-    'start':'C'
+    'nomer_uroka':0,
+    'start':'A',
+    'message_id':[],
+    'bot_messages':[],
+    'sahihs':0,
+    'Мединский_курс_том_1':[],
+    'Мединский_курс_том_2':[],
+    'Мединский_курс_том_3':[]
 }
 
 with sq.connect("learning.db") as con:
@@ -65,8 +71,56 @@ kursi={
         3:'C'
     }
 }
-def get_urok(nomer):
+def get_danniye(id, data):
     a=(kursi['medinskiy_1_tom'][nomer])
 
+'''def vivod_dannih(user_id, book_name):
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
+        cur = con.cursor()
+        cur.execute(f"SELECT {book_name} FROM users WHERE user_id=?", (user_id,))
+        user_data = cur.fetchall()
+        return list(user_data)
 
-get_ecsamen_0(user_dict_template['book_name'],user_dict_template['start'],user_dict_template['index'])
+datas = vivod_dannih(1292530554, 'Мединский_курс_том_1')
+for i in datas:
+    print(i)'''
+
+def vivod_dannih(user_id):
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
+        cur = con.cursor()
+        cur.execute(f"SELECT * FROM users WHERE user_id=?", (user_id,))
+        user_data = cur.fetchall()
+        result = [list(row) for row in user_data]
+        return result
+
+a=1292530554
+b=488834229
+datas = vivod_dannih(488834229)
+#result=datas.replace(',', '').split()
+#print(result)
+
+def zagruzka_dannih(id, datas):
+    result = [list(row) for row in datas]
+    for i in result:
+        t1 = i[4]
+        t2 = i[5]
+        t3 = i[6]
+        if t1 != None:
+            lst = t1.replace(',', '').split()
+            user_dict_template['Мединский_курс_том_1']=lst
+        if t2 != None:
+            lst = t2.replace(',', '').split()
+            user_dict_template['Мединский_курс_том_2']=lst
+        if t3 != None:
+            user_dict_template['Мединский_курс_том_3']=lst
+            lst = t3.replace(',', '').split()
+
+
+zagruzka_dannih(user_dict_template['Мединский_курс_том_1'], datas)
+dat=user_dict_template['Мединский_курс_том_1']
+print(dat)
+
+if 'A' in user_dict_template['Мединский_курс_том_1']:
+    print(user_dict_template['Мединский_курс_том_1'])
+else:
+    print('A')

@@ -8,7 +8,11 @@ user_dict_template = {
     'nomer_uroka':0,
     'start':'A',
     'message_id':[],
-    'bot_messages':[]
+    'bot_messages':[],
+    'sahihs':0,
+    'Мединский_курс_том_1':[],
+    'Мединский_курс_том_2':[],
+    'Мединский_курс_том_3':[]
 }
 
 
@@ -52,7 +56,7 @@ users_db = {}
 
 def create_new_row_for_new_user(user_id, first_name, last_name):
 
-    with sq.connect("venv/database/learning.db") as con:
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         create_query = """
             INSERT INTO users (user_id, first_name, last_name) SELECT ?, ?, ?
@@ -66,7 +70,7 @@ def create_new_row_for_new_user(user_id, first_name, last_name):
 
 #проверка на то, есть ли такой пользователь в таблице
 def check_users():
-    with sq.connect("venv/database/learning.db") as con:
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute("""SELECT user_id FROM users
         """)
@@ -75,26 +79,25 @@ def check_users():
 
 #если такой пользователь есть в таблице, выводим его танные во временную память
 def vivod_dannih(user_id):
-    with sq.connect("/database/learning.db") as con:
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute(f"SELECT * FROM users WHERE user_id=?", (user_id,))
         user_data = cur.fetchall()
-        return user_data
+        result = [list(row) for row in user_data]
+        return result
 
 #сохраняем пройденные уроки в таблицу
-def izmeneniye_dannih():
-    def add_completed_topic(user_id, direction, topic):
-        with sqlite3.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
-            cur = con.cursor()
-            cur.execute(f"SELECT topics FROM users WHERE user_id=?", (user_id,))
-            current_topics = cur.fetchone()[0]  # получаем текущее значение ячейки
-            if current_topics:  # если значение не пустое
-                new_topics = f"{current_topics}, {topic}"  # добавляем новую тему к списку
-            else:
-                new_topics = topic  # если значение пустое, просто присваиваем новую тему
+def add_completed_topic(user_id, direction, topic):
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
+        cur = con.cursor()
+        cur.execute(f"SELECT {direction} FROM users WHERE user_id=?", (user_id,))
+        current_topics = cur.fetchone()[0]  # получаем текущее значение ячейки
+        if current_topics:  # если значение не пустое
+            new_topics = f"{current_topics}, {topic}"  # добавляем новую тему к списку
+        else:
+            new_topics = topic  # если значение пустое, просто присваиваем новую тему
 
-            cur.execute(f"UPDATE users SET {direction}=? WHERE user_id=?", (new_topics, user_id))
-            con.commit()
+        cur.execute(f"UPDATE users SET {direction}=? WHERE user_id=?", (new_topics, user_id))
+        con.commit()
 
-values = str(kursi.get(user_dict_template['active_course'], {}).get(user_dict_template['book_name'], {}).get(user_dict_template['nomer_uroka']))
-print(values)
+

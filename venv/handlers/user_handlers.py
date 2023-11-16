@@ -8,7 +8,7 @@ from keyboards.ecsamen_kb import get_ecsamen_kb, ending_ecsamen_kb
 from keyboards.knopki_urokov import for_start_kb
 from lexicon.lexicon import LEXICON
 from services.services import get_ecsamen, zagruzka_dannih, kolichestvo_voprosov
-from database.database import create_new_row_for_new_user, kursi
+from database.database import create_new_row_for_new_user, kursi, add_completed_topic
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 router = Router()
@@ -24,13 +24,14 @@ async def process_start_command(message: Message):
     id=message.from_user.id
     users = check_users()
     if id in users:
-        users_db[message.from_user.id] = deepcopy(user_dict_template)
-        datas=vivod_dannih(message.from_user.id)
-        zagruzka_dannih(id, datas)
+        if message.from_user.id not in users_db:
+            users_db[message.from_user.id] = deepcopy(user_dict_template)
     else:
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
         if message.from_user.id not in users_db:
             users_db[message.from_user.id] = deepcopy(user_dict_template)
+    datas = vivod_dannih(message.from_user.id)
+    zagruzka_dannih(message.from_user.id, datas)
     # строка для добавления айди бота в список чтобы очищать сообщения перед экзаменом
     users_db[message.from_user.id]['message_id'].append(message.message_id)
     users_db[message.from_user.id]['bot_messages'].append(sent_message.message_id)
@@ -114,7 +115,10 @@ async def book_callback(callback_query: CallbackQuery):
     # Создаем инлайн клавиатуру с кнопками уроков
     lesson_buttons = []
     for lesson_number, lesson_id in kursi[course_name][book_name].items():
-        button = InlineKeyboardButton(text=str(lesson_number), callback_data=lesson_id)
+        if lesson_id in users_db[callback_query.from_user.id]['Мединский_курс_том_1']:
+            button = InlineKeyboardButton(text=f'{lesson_number}✅', callback_data=lesson_id)
+        else:
+            button = InlineKeyboardButton(text=str(lesson_number), callback_data=lesson_id)
         lesson_buttons.append([button])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=lesson_buttons)
@@ -126,15 +130,11 @@ async def book_callback(callback_query: CallbackQuery):
 async def lesson_callback(callback_query: CallbackQuery):
     start = callback_query.data
     users_db[callback_query.from_user.id]['start']=start
-    #start=str(kursi.get(user_dict_template['active_course'], {}).get(user_dict_template['book_name'], {}).get(user_dict_template['nomer_uroka']))
-    #users_db[callback_query.from_user.id]['start']=start
-
     table=users_db[callback_query.from_user.id]['book_name']
     users_db[callback_query.from_user.id]['index']=0
     index=users_db[callback_query.from_user.id]['index']
     # Получаем текст урока по его номеру
     rows = get_ecsamen(table, start, index)  # Замените это вашей функцией получения текста урока
-
     await callback_query.message.edit_text(
         text=f'{LEXICON["translate"]} "{rows[1]}"',
         reply_markup=get_ecsamen_kb(rows))
@@ -146,17 +146,22 @@ async def lesson_callback(callback_query: CallbackQuery):
 async def proverka_otveta(callback: CallbackQuery):
     rows=get_ecsamen(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'], users_db[callback.from_user.id]['index'])
     pravilno=rows[1]
+    users_db[callback.from_user.id]['sahihs']
     b = rows[6]
+    kol_vo=kolichestvo_voprosov(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'])
     all_rows=kolichestvo_voprosov(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'])
     users_db[callback.from_user.id]['index'] += 1
     rows=get_ecsamen(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'], users_db[callback.from_user.id]['index'])
     if callback.data==b:
-        await callback.answer(text=LEXICON['right'],show_alert=True)
+        await callback.answer(text=LEXICON['right'])
+        users_db[callback.from_user.id]['sahihs']+=1
         if users_db[callback.from_user.id]['index'] < all_rows:
             await callback.message.edit_text(
                 text=f'{LEXICON["translate"]} "{rows[1]}"',
                 reply_markup=get_ecsamen_kb(rows))
         else:
+            if users_db[callback.from_user.id]['sahihs'] == kol_vo:
+                add_completed_topic(callback.from_user.id, users_db[callback.from_user.id]['book_name'],users_db[callback.from_user.id]['start'])
             await callback.message.edit_text(
                 text=f'{LEXICON["ending"]}',
                 reply_markup=ending_ecsamen_kb

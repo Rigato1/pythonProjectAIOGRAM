@@ -16,6 +16,7 @@ def get_ecsamen(table_name, start, index) -> str:
         else:
             return None
 
+#данный код нужен чтобы вычислить сколько вопросов есть в уроке
 def kolichestvo_voprosov(table_name, start) -> str:
     with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
@@ -24,9 +25,25 @@ def kolichestvo_voprosov(table_name, start) -> str:
         rows = cur.fetchall()
         return len(rows)
 
+#в случае если перезагрузился сервер надо вернуть то что прошли пользователи
 def zagruzka_dannih(id, datas):
-    users_db[id]['medinskiy_1_tom'] = datas[4]
-    users_db[id]['medinskiy_2_tom'] = datas[5]
-    users_db[id]['medinskiy_3_tom'] = datas[6]
-    print(users_db[id])
+    result = [list(row) for row in datas]
+    for i in result:
+        t1 = i[4]
+        t2 = i[5]
+        t3 = i[6]
+        if t1 != None:
+            lst = t1.replace(',', '').split()
+            for x in lst:
+                users_db[id]['Мединский_курс_том_1'].append(x)
+        if t2 != None:
+            lst = t2.replace(',', '').split()
+            for x in lst:
+                users_db[id]['Мединский_курс_том_2'].append(x)
+        if t3 != None:
+            lst = t3.replace(',', '').split()
+            for x in lst:
+                users_db[id]['Мединский_курс_том_3'].append(x)
+
+
 
