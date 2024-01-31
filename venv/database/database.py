@@ -1,24 +1,22 @@
 # Создаем шаблон заполнения словаря с пользователями
 import sqlite3 as sq
+import re
 user_dict_template = {
     'bookmarks': set(),
     'index':0,
     'active_course':"Арабский язык",
     'book_name':'Мединский_курс_том_1',
     'nomer_uroka':0,
-    'start':'A',
+    'start':'',
     'message_id':[],
     'bot_messages':[],
     'sahihs':0,
-    'Мединский_курс_том_1':[],
-    'Мединский_курс_том_2':[],
-    'Мединский_курс_том_3':[]
+    'Мединский_курс_том_1':'',
+    'Мединский_курс_том_2':'',
+    'Мединский_курс_том_3':''
 }
 
 
-medinskiy_1 = {
-    '1': 22
-}
 kursi={
     "Арабский язык": {
         'Мединский_курс_том_1':{
@@ -88,16 +86,20 @@ def vivod_dannih(user_id):
 
 #сохраняем пройденные уроки в таблицу
 def add_completed_topic(user_id, direction, topic):
+    cleaned_value = re.sub(r'[^\w\s]', '', topic)
+
     with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute(f"SELECT {direction} FROM users WHERE user_id=?", (user_id,))
-        current_topics = cur.fetchone()[0]  # получаем текущее значение ячейки
-        if current_topics:  # если значение не пустое
-            new_topics = f"{current_topics}, {topic}"  # добавляем новую тему к списку
+        current_topics = cur.fetchone()[0]  # Получаем текущее значение ячейки
+
+        if current_topics:
+            # Если значение уже есть, считаем данные из таблицы и добавляем новые данные
+            new_topics = current_topics + ' ' + cleaned_value
+            cur.execute(f"UPDATE users SET {direction}=? WHERE user_id=?", (new_topics, user_id))
         else:
-            new_topics = topic  # если значение пустое, просто присваиваем новую тему
+            # Если значения нет, просто добавляем новые данные из словаря
+            cur.execute(f"UPDATE users SET {direction}=? WHERE user_id=?", (cleaned_value, user_id))
 
-        cur.execute(f"UPDATE users SET {direction}=? WHERE user_id=?", (new_topics, user_id))
         con.commit()
-
 

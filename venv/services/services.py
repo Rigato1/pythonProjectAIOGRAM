@@ -35,15 +35,15 @@ def zagruzka_dannih(id, datas):
         if t1 != None:
             lst = t1.replace(',', '').split()
             for x in lst:
-                users_db[id]['Мединский_курс_том_1'].append(x)
+                users_db[id]['Мединский_курс_том_1']+=x
         if t2 != None:
             lst = t2.replace(',', '').split()
             for x in lst:
-                users_db[id]['Мединский_курс_том_2'].append(x)
+                users_db[id]['Мединский_курс_том_2']+=x
         if t3 != None:
             lst = t3.replace(',', '').split()
             for x in lst:
-                users_db[id]['Мединский_курс_том_3'].append(x)
+                users_db[id]['Мединский_курс_том_3']+=x
 
 
 

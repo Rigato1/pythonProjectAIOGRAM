@@ -26,12 +26,12 @@ async def process_start_command(message: Message):
     if id in users:
         if message.from_user.id not in users_db:
             users_db[message.from_user.id] = deepcopy(user_dict_template)
+
     else:
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
         if message.from_user.id not in users_db:
             users_db[message.from_user.id] = deepcopy(user_dict_template)
-    datas = vivod_dannih(message.from_user.id)
-    zagruzka_dannih(message.from_user.id, datas)
+
     # строка для добавления айди бота в список чтобы очищать сообщения перед экзаменом
     users_db[message.from_user.id]['message_id'].append(message.message_id)
     users_db[message.from_user.id]['bot_messages'].append(sent_message.message_id)
@@ -46,6 +46,7 @@ async def process_begin(message: Message):
     users_db[message.from_user.id]['message_id'].append(message.message_id)
     # Получаем чат ID пользователя
     chat_id = message.chat.id
+
     #здесь мы очищаем все сообщения из чата
     messages_ids = users_db[message.from_user.id]['message_id']
     bot_messages = users_db[message.from_user.id]['bot_messages']
@@ -59,7 +60,8 @@ async def process_begin(message: Message):
     for book_name in kursi.keys():
         button = InlineKeyboardButton(text=book_name, callback_data=book_name)
         book_buttons.append([button])
-
+    datas = vivod_dannih(message.from_user.id)
+    zagruzka_dannih(message.from_user.id, datas)
     keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
 
     await message.answer("Выберите тему:", reply_markup=keyboard)
@@ -82,10 +84,13 @@ async def restart_func(callback_query: CallbackQuery):
 @router.callback_query(F.data=='New_theme')
 async def new_theme_func(callback_query: CallbackQuery):
     book_buttons=[]
+
+    datas = vivod_dannih(callback_query.from_user.id)
+    zagruzka_dannih(callback_query.from_user.id, datas)
     for book_name in kursi.keys():
         button = InlineKeyboardButton(text=book_name, callback_data=book_name)
         book_buttons.append([button])
-
+    users_db[callback_query.from_user.id]['start'] = ''
     keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
 
     await callback_query.message.edit_text("Выберите тему:", reply_markup=keyboard)
@@ -113,6 +118,7 @@ async def book_callback(callback_query: CallbackQuery):
     users_db[callback_query.from_user.id]['book_name']=book_name
     course_name = users_db[callback_query.from_user.id]['active_course']
     # Создаем инлайн клавиатуру с кнопками уроков
+    users_db[callback_query.from_user.id]['start']=[]
     lesson_buttons = []
     for lesson_number, lesson_id in kursi[course_name][book_name].items():
         if lesson_id in users_db[callback_query.from_user.id]['Мединский_курс_том_1']:
@@ -128,13 +134,13 @@ async def book_callback(callback_query: CallbackQuery):
 # Обработчик Callback-кнопок номеров уроков
 @router.callback_query(lambda query: query.data in list(kursi.get(user_dict_template['active_course'], {}).get(user_dict_template['book_name'], {}).values()))
 async def lesson_callback(callback_query: CallbackQuery):
-    start = callback_query.data
-    users_db[callback_query.from_user.id]['start']=start
+    users_db[callback_query.from_user.id]['start']=callback_query.data
     table=users_db[callback_query.from_user.id]['book_name']
     users_db[callback_query.from_user.id]['index']=0
     index=users_db[callback_query.from_user.id]['index']
+    users_db[callback_query.from_user.id]['sahihs'] = 0
     # Получаем текст урока по его номеру
-    rows = get_ecsamen(table, start, index)  # Замените это вашей функцией получения текста урока
+    rows = get_ecsamen(users_db[callback_query.from_user.id]['book_name'], callback_query.data, users_db[callback_query.from_user.id]['index'])  # Замените это вашей функцией получения текста урока
     await callback_query.message.edit_text(
         text=f'{LEXICON["translate"]} "{rows[1]}"',
         reply_markup=get_ecsamen_kb(rows))
@@ -149,27 +155,36 @@ async def proverka_otveta(callback: CallbackQuery):
     users_db[callback.from_user.id]['sahihs']
     b = rows[6]
     kol_vo=kolichestvo_voprosov(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'])
-    all_rows=kolichestvo_voprosov(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'])
     users_db[callback.from_user.id]['index'] += 1
     rows=get_ecsamen(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'], users_db[callback.from_user.id]['index'])
     if callback.data==b:
         await callback.answer(text=LEXICON['right'])
         users_db[callback.from_user.id]['sahihs']+=1
-        if users_db[callback.from_user.id]['index'] < all_rows:
+        if users_db[callback.from_user.id]['index'] < kol_vo:
             await callback.message.edit_text(
                 text=f'{LEXICON["translate"]} "{rows[1]}"',
                 reply_markup=get_ecsamen_kb(rows))
-        else:
+        elif users_db[callback.from_user.id]['index'] == kol_vo:
             if users_db[callback.from_user.id]['sahihs'] == kol_vo:
-                add_completed_topic(callback.from_user.id, users_db[callback.from_user.id]['book_name'],users_db[callback.from_user.id]['start'])
-            await callback.message.edit_text(
-                text=f'{LEXICON["ending"]}',
-                reply_markup=ending_ecsamen_kb
+                nomera_urokov=str(users_db[callback.from_user.id][users_db[callback.from_user.id]['book_name']])
+                if users_db[callback.from_user.id]['start'] not in nomera_urokov:
+                    add_completed_topic(callback.from_user.id, users_db[callback.from_user.id]['book_name'],users_db[callback.from_user.id]['start'])
+                    users_db[callback.from_user.id][users_db[callback.from_user.id]['book_name']] += users_db[callback.from_user.id]['start']
+
+                else:
+                    await callback.message.edit_text(
+                    text=f'{LEXICON["ending"]}',
+                    reply_markup=ending_ecsamen_kb
+                    )
+            else:
+                await callback.message.edit_text(
+                    text=f'{LEXICON["ending"]}',
+                    reply_markup=ending_ecsamen_kb
                 )
 
     else:
         await callback.answer(text=f'{LEXICON["not_right"]} \n правильный перевод слова {pravilno} будет "{b}" \n\n',show_alert=True)
-        if users_db[callback.from_user.id]['index'] < all_rows:
+        if users_db[callback.from_user.id]['index'] < kol_vo:
             await callback.message.edit_text(
                 text=f'{LEXICON["translate"]} "{rows[1]}"',
                 reply_markup=get_ecsamen_kb(rows)
