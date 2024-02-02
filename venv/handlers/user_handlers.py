@@ -143,7 +143,7 @@ async def lesson_callback(callback_query: CallbackQuery):
     rows = get_ecsamen(users_db[callback_query.from_user.id]['book_name'], callback_query.data, users_db[callback_query.from_user.id]['index'])  # Замените это вашей функцией получения текста урока
     await callback_query.message.edit_text(
         text=f'{LEXICON["translate"]} "{rows[1]}"',
-        reply_markup=get_ecsamen_kb(rows))
+        reply_markup=get_ecsamen_kb(rows, table))
 
 
 
@@ -154,6 +154,7 @@ async def proverka_otveta(callback: CallbackQuery):
     pravilno=rows[1]
     users_db[callback.from_user.id]['sahihs']
     b = rows[6]
+    table = users_db[callback.from_user.id]['book_name']
     kol_vo=kolichestvo_voprosov(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'])
     users_db[callback.from_user.id]['index'] += 1
     rows=get_ecsamen(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'], users_db[callback.from_user.id]['index'])
@@ -163,14 +164,17 @@ async def proverka_otveta(callback: CallbackQuery):
         if users_db[callback.from_user.id]['index'] < kol_vo:
             await callback.message.edit_text(
                 text=f'{LEXICON["translate"]} "{rows[1]}"',
-                reply_markup=get_ecsamen_kb(rows))
+                reply_markup=get_ecsamen_kb(rows,table))
         elif users_db[callback.from_user.id]['index'] == kol_vo:
             if users_db[callback.from_user.id]['sahihs'] == kol_vo:
                 nomera_urokov=str(users_db[callback.from_user.id][users_db[callback.from_user.id]['book_name']])
                 if users_db[callback.from_user.id]['start'] not in nomera_urokov:
                     add_completed_topic(callback.from_user.id, users_db[callback.from_user.id]['book_name'],users_db[callback.from_user.id]['start'])
                     users_db[callback.from_user.id][users_db[callback.from_user.id]['book_name']] += users_db[callback.from_user.id]['start']
-
+                    await callback.message.edit_text(
+                        text=f'{LEXICON["ending"]}',
+                        reply_markup=ending_ecsamen_kb
+                    )
                 else:
                     await callback.message.edit_text(
                     text=f'{LEXICON["ending"]}',
@@ -187,7 +191,7 @@ async def proverka_otveta(callback: CallbackQuery):
         if users_db[callback.from_user.id]['index'] < kol_vo:
             await callback.message.edit_text(
                 text=f'{LEXICON["translate"]} "{rows[1]}"',
-                reply_markup=get_ecsamen_kb(rows)
+                reply_markup=get_ecsamen_kb(rows,table)
                 )
         else:
             await callback.message.edit_text(
