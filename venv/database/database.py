@@ -103,3 +103,17 @@ def add_completed_topic(user_id, direction, topic):
 
         con.commit()
 
+def sbros_galochek(user_id, direction):
+    with sq.connect("C:/Users/Мутагир/PycharmProjects/pythonProjectAIOGRAM/venv/database/learning.db") as con:
+        cur = con.cursor()
+        cur.execute(f"SELECT {direction} FROM users WHERE user_id=?", (user_id,))
+        current_topics = cur.fetchone()[0]  # Получаем текущее значение ячейки
+        new_topics = ''
+        cur.execute(f"UPDATE users SET {direction}=? WHERE user_id=?", (new_topics, user_id))
+
+
+
+
+
+
+

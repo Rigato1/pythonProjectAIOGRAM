@@ -8,7 +8,7 @@ from keyboards.ecsamen_kb import get_ecsamen_kb, ending_ecsamen_kb
 from keyboards.knopki_urokov import for_start_kb
 from lexicon.lexicon import LEXICON
 from services.services import get_ecsamen, zagruzka_dannih, kolichestvo_voprosov
-from database.database import create_new_row_for_new_user, kursi, add_completed_topic
+from database.database import create_new_row_for_new_user, kursi, add_completed_topic, sbros_galochek
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 router = Router()
@@ -66,6 +66,9 @@ async def process_begin(message: Message):
 
     await message.answer("Выберите тему:", reply_markup=keyboard)
 
+
+
+
 #кнопка перезапуска когда кончаются слова
 @router.callback_query(F.data=='restart')
 async def restart_func(callback_query: CallbackQuery):
@@ -79,6 +82,9 @@ async def restart_func(callback_query: CallbackQuery):
     await callback_query.message.edit_text(
         text=f'{LEXICON["translate"]} "{rows[1]}"',
         reply_markup=get_ecsamen_kb(rows))
+
+
+
 
 #кнопка выбора другой темы просто перекидывает в начало инлайн клавиатуры
 @router.callback_query(F.data=='New_theme')
@@ -96,6 +102,7 @@ async def new_theme_func(callback_query: CallbackQuery):
     await callback_query.message.edit_text("Выберите тему:", reply_markup=keyboard)
 
 
+
 #хендлер выбора предмета для экзамена
 @router.callback_query(lambda query: query.data in kursi.keys())
 async def course_callback(callback_query: CallbackQuery):
@@ -110,6 +117,8 @@ async def course_callback(callback_query: CallbackQuery):
     keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
     course_name = users_db[callback_query.from_user.id]['active_course']
     await callback_query.message.edit_text(f"Выберите книгу для экзамена '{course_name}':", reply_markup=keyboard)
+
+
 
 # Обработчик Callback-кнопок книг
 @router.callback_query(lambda query: query.data in list(kursi.get(users_db[query.from_user.id]['active_course'], {}).keys()))
@@ -126,10 +135,30 @@ async def book_callback(callback_query: CallbackQuery):
         else:
             button = InlineKeyboardButton(text=str(lesson_number), callback_data=lesson_id)
         lesson_buttons.append([button])
+    sbros = InlineKeyboardButton(text='Сбросить галочки', callback_data='sbros')
+    lesson_buttons.append([sbros])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=lesson_buttons)
 
     await callback_query.message.edit_text(f"Выберите номер урока для книги '{book_name}':", reply_markup=keyboard)
+
+
+
+#сброс галочек
+@router.callback_query(F.data=='sbros')
+async def sbros(callback_query: CallbackQuery):
+    sbros_galochek(callback_query.from_user.id, users_db[callback_query.from_user.id]['book_name'])
+    users_db[callback_query.from_user.id][users_db[callback_query.from_user.id]['book_name']]=''
+    book_buttons = []
+    for book_name in kursi.keys():
+        button = InlineKeyboardButton(text=book_name, callback_data=book_name)
+        book_buttons.append([button])
+    users_db[callback_query.from_user.id]['start'] = ''
+    keyboard = InlineKeyboardMarkup(inline_keyboard=book_buttons)
+    await callback_query.message.edit_text("Выберите тему:", reply_markup=keyboard)
+
+
+
 
 # Обработчик Callback-кнопок номеров уроков
 @router.callback_query(lambda query: query.data in list(kursi.get(user_dict_template['active_course'], {}).get(user_dict_template['book_name'], {}).values()))
@@ -209,6 +238,7 @@ async def process_help_command(message: Message):
     sent_message = await message.answer(LEXICON[message.text])
     users_db[message.from_user.id]['bot_messages'].append(sent_message.message_id)
     users_db[message.from_user.id]['message_id'].append(message.message_id)
+
 
 
 # Этот хэндлер будет срабатывать на команду "/continue"
