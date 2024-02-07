@@ -10,7 +10,7 @@ from lexicon.lexicon import LEXICON
 from services.services import get_ecsamen, zagruzka_dannih, kolichestvo_voprosov
 from database.database import create_new_row_for_new_user, kursi, add_completed_topic, sbros_galochek
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+import html
 router = Router()
 
 
@@ -168,10 +168,15 @@ async def lesson_callback(callback_query: CallbackQuery):
     users_db[callback_query.from_user.id]['index']=0
     index=users_db[callback_query.from_user.id]['index']
     users_db[callback_query.from_user.id]['sahihs'] = 0
+    rows = get_ecsamen(users_db[callback_query.from_user.id]['book_name'], callback_query.data,
+                       users_db[callback_query.from_user.id]['index'])
+    kol_vo = kolichestvo_voprosov(users_db[callback_query.from_user.id]['book_name'],
+                                  users_db[callback_query.from_user.id]['start'])
+    text = f'{index}/{kol_vo} \n{LEXICON["translate"]} <b>{rows[1]}</b>'
     # Получаем текст урока по его номеру
-    rows = get_ecsamen(users_db[callback_query.from_user.id]['book_name'], callback_query.data, users_db[callback_query.from_user.id]['index'])  # Замените это вашей функцией получения текста урока
+
     await callback_query.message.edit_text(
-        text=f'{LEXICON["translate"]} "{rows[1]}"',
+        text=text,
         reply_markup=get_ecsamen_kb(rows, table))
 
 
@@ -186,14 +191,15 @@ async def proverka_otveta(callback: CallbackQuery):
     table = users_db[callback.from_user.id]['book_name']
     kol_vo=kolichestvo_voprosov(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'])
     users_db[callback.from_user.id]['index'] += 1
+    index = users_db[callback.from_user.id]['index']
     rows=get_ecsamen(users_db[callback.from_user.id]['book_name'], users_db[callback.from_user.id]['start'], users_db[callback.from_user.id]['index'])
     if callback.data==b:
         await callback.answer(text=LEXICON['right'])
         users_db[callback.from_user.id]['sahihs']+=1
         if users_db[callback.from_user.id]['index'] < kol_vo:
-            await callback.message.edit_text(
-                text=f'{LEXICON["translate"]} "{rows[1]}"',
-                reply_markup=get_ecsamen_kb(rows,table))
+            text = f'{index}/{kol_vo} \n{LEXICON["translate"]} <b>{rows[1]}</b>'
+            markup = get_ecsamen_kb(rows, table)
+            await callback.message.edit_text(text=text, reply_markup=markup, parse_mode="HTML")
         elif users_db[callback.from_user.id]['index'] == kol_vo:
             if users_db[callback.from_user.id]['sahihs'] == kol_vo:
                 nomera_urokov=str(users_db[callback.from_user.id][users_db[callback.from_user.id]['book_name']])
