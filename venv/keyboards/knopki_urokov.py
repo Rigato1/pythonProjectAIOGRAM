@@ -5,14 +5,12 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 button_1 = KeyboardButton(text='Начать экзамен')
-button_2 = KeyboardButton(text='Посмотреть прогресс')
 
 btn_stop = KeyboardButton(text='Остановить экзамен')
 btn_restart = KeyboardButton(text='Начать текущий экзамен заново')
 
 
-for_start_kb = ReplyKeyboardMarkup(keyboard=[[button_1],
-                                         [button_2]],
+for_start_kb = ReplyKeyboardMarkup(keyboard=[[button_1]],
                                    resize_keyboard=True)
 
 v_processe_kb = ReplyKeyboardMarkup(keyboard=[[btn_restart],
