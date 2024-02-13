@@ -26,8 +26,9 @@ async def process_start_command(message: Message):
     if id in users:
         if message.from_user.id not in users_db:
             users_db[message.from_user.id] = deepcopy(user_dict_template)
-
+            print('такой пользователь есть')
     else:
+        print('такого нет пользователя')
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
         if message.from_user.id not in users_db:
             users_db[message.from_user.id] = deepcopy(user_dict_template)
@@ -43,6 +44,7 @@ async def process_start_command(message: Message):
 #начало экзамена
 @router.message(F.text == 'Начать экзамен')
 async def process_begin(message: Message):
+    print('кнопка начать нажатаъ')
     users_db[message.from_user.id]['message_id'].append(message.message_id)
     # Получаем чат ID пользователя
     chat_id = message.chat.id
