@@ -1,6 +1,7 @@
 # Создаем шаблон заполнения словаря с пользователями
 import sqlite3 as sq
 import re
+#это небольшая база создается для каждого пользователя
 user_dict_template = {
     'bookmarks': set(),
     'index':0,
