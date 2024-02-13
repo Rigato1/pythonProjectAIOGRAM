@@ -13,13 +13,3 @@ async def set_main_menu(bot: Bot):
         description in LEXICON_COMMANDS.items()]
     await bot.set_my_commands(main_menu_commands)
 
-# Создаем объекты кнопок
-#button_1 = KeyboardButton(text='Собак 🦮')
-#button_2 = KeyboardButton(text='Огурцов 🥒')
-
-# Создаем объект клавиатуры, добавляя в него кнопки
-#keyboard = ReplyKeyboardMarkup(keyboard=[[button_1, button_2]])
-#prodoljit=KeyboardButton(text='')
-
-def get_main_keyboard():
-    pass
