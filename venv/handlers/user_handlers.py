@@ -19,17 +19,14 @@ router = Router()
 # и отправлять ему приветственное сообщение
 @router.message(CommandStart())
 async def process_start_command(message: Message):
-    sent_message = await message.answer(LEXICON[message.text],
-                         reply_markup=for_start_kb)
+    sent_message = await message.answer(LEXICON[message.text], reply_markup=for_start_kb)
     id=message.from_user.id
     users = check_users()
-    if id in users:
-        if message.from_user.id not in users_db:
-            users_db[message.from_user.id] = deepcopy(user_dict_template)
-    else:
+    if id not in users:
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
-        if message.from_user.id not in users_db:
-            users_db[message.from_user.id] = deepcopy(user_dict_template)
+    if message.from_user.id not in users_db:
+        users_db[message.from_user.id] = deepcopy(user_dict_template)
+
 
     # строка для добавления айди бота в список чтобы очищать сообщения перед экзаменом
     users_db[message.from_user.id]['message_id'].append(message.message_id)
@@ -42,6 +39,7 @@ async def process_start_command(message: Message):
 #начало экзамена
 @router.message(F.text == 'Начать экзамен')
 async def process_begin(message: Message):
+    print(users_db)
     users_db[message.from_user.id]['message_id'].append(message.message_id)
     # Получаем чат ID пользователя
     chat_id = message.chat.id
