@@ -22,7 +22,7 @@ async def process_start_command(message: Message):
     sent_message = await message.answer(LEXICON[message.text], reply_markup=for_start_kb)
     id=message.from_user.id
     if message.from_user.id not in users_db:
-        users_db[id] = copy.deepcopy(user_dict_template)
+        users_db[id] = deepcopy(user_dict_template)
     users = check_users()
     if id not in users:
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
@@ -40,7 +40,6 @@ async def process_start_command(message: Message):
 #начало экзамена
 @router.message(F.text == 'Начать экзамен')
 async def process_begin(message: Message):
-    print(users_db)
     users_db[message.from_user.id]['message_id'].append(message.message_id)
     # Получаем чат ID пользователя
     chat_id = message.chat.id
