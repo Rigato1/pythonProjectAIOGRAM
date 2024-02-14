@@ -3,6 +3,8 @@ from database.database import users_db
 import sqlite3 as sq
 from lexicon.lexicon import LEXICON
 
+#адрес для работы в пайчарме /database/learning.db
+#адрес для работы на сервере "/home/mike/pythonProjectAIOGRAM/venv/database/learning.db"
 
 #выводит вопросы из таблицы
 def get_ecsamen(table_name, start, index) -> str:
