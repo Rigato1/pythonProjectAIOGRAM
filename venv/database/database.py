@@ -46,6 +46,9 @@ kursi={
     }}
 }
 
+#адрес для работы в пайчарме /database/learning.db
+#адрес для работы на сервере "/home/mike/pythonProjectAIOGRAM/venv/database/learning.db"
+
 # Инициализируем "базу данных"
 users_db = {}
 

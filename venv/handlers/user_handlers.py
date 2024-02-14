@@ -221,10 +221,9 @@ async def proverka_otveta(callback: CallbackQuery):
     else:
         await callback.answer(text=f'{LEXICON["not_right"]} \n правильный перевод слова {pravilno} будет "{b}" \n\n',show_alert=True)
         if users_db[callback.from_user.id]['index'] < kol_vo:
-            await callback.message.edit_text(
-                text=f'{LEXICON["translate"]} "{rows[1]}"',
-                reply_markup=get_ecsamen_kb(rows,table)
-                )
+            text=f'{index}/{kol_vo} \n{LEXICON["translate"]} <b>{rows[1]}</b>'
+            markup = get_ecsamen_kb(rows, table)
+            await callback.message.edit_text(text=text, reply_markup=markup, parse_mode="HTML")
         else:
             await callback.message.edit_text(
                 text=f'{LEXICON["ending"]}',
