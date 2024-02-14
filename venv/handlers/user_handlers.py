@@ -21,11 +21,12 @@ router = Router()
 async def process_start_command(message: Message):
     sent_message = await message.answer(LEXICON[message.text], reply_markup=for_start_kb)
     id=message.from_user.id
+    if message.from_user.id not in users_db:
+        users_db[id] = copy.deepcopy(user_dict_template)
     users = check_users()
     if id not in users:
         create_new_row_for_new_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name)
-    if message.from_user.id not in users_db:
-        users_db[id] = copy.deepcopy(user_dict_template)
+
 
 
     # строка для добавления айди бота в список чтобы очищать сообщения перед экзаменом
