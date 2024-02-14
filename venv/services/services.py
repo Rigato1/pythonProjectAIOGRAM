@@ -6,7 +6,7 @@ from lexicon.lexicon import LEXICON
 
 #выводит вопросы из таблицы
 def get_ecsamen(table_name, start, index) -> str:
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         query = f"SELECT * FROM {table_name} WHERE idn LIKE '{start}%'"
         cur.execute(query)
@@ -18,7 +18,7 @@ def get_ecsamen(table_name, start, index) -> str:
 
 #данный код нужен чтобы вычислить сколько вопросов есть в уроке
 def kolichestvo_voprosov(table_name, start) -> str:
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         query = f"SELECT idn FROM {table_name} WHERE idn LIKE '{start}%'"
         cur.execute(query)
