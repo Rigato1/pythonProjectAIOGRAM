@@ -67,9 +67,8 @@ def create_new_row_for_new_user(user_id, first_name, last_name):
 def check_users():
     with sq.connect("database/learning.db") as con:
         cur = con.cursor()
-        cur.execute("""SELECT user_id FROM users
-        """)
-        users = cur.fetchall()
+        cur.execute("SELECT user_id FROM users")
+        users = [item[0] for item in cur.fetchall()]  # достаем первый элемент из каждого кортежа и создаем плоский список
         return users
 
 #если такой пользователь есть в таблице, выводим его танные во временную память
