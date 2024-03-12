@@ -54,7 +54,7 @@ users_db = {}
 
 def create_new_row_for_new_user(user_id, first_name, last_name):
 
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         create_query = """
             INSERT INTO users (user_id, first_name, last_name) SELECT ?, ?, ?
@@ -68,7 +68,7 @@ def create_new_row_for_new_user(user_id, first_name, last_name):
 
 #проверка на то, есть ли такой пользователь в таблице
 def check_users():
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute("SELECT user_id FROM users")
         users = [item[0] for item in cur.fetchall()]  # достаем первый элемент из каждого кортежа и создаем плоский список
@@ -76,7 +76,7 @@ def check_users():
 
 #если такой пользователь есть в таблице, выводим его танные во временную память
 def vivod_dannih(user_id):
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute(f"SELECT * FROM users WHERE user_id=?", (user_id,))
         user_data = cur.fetchall()
@@ -87,7 +87,7 @@ def vivod_dannih(user_id):
 def add_completed_topic(user_id, direction, topic):
     cleaned_value = re.sub(r'[^\w\s]', '', topic)
 
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute(f"SELECT {direction} FROM users WHERE user_id=?", (user_id,))
         current_topics = cur.fetchone()[0]  # Получаем текущее значение ячейки
@@ -103,7 +103,7 @@ def add_completed_topic(user_id, direction, topic):
         con.commit()
 
 def sbros_galochek(user_id, direction):
-    with sq.connect("database/learning.db") as con:
+    with sq.connect("/home/mike/pythonProjectAIOGRAM/venv/database/learning.db") as con:
         cur = con.cursor()
         cur.execute(f"SELECT {direction} FROM users WHERE user_id=?", (user_id,))
         current_topics = cur.fetchone()[0]  # Получаем текущее значение ячейки
